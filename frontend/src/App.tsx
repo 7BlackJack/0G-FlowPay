@@ -649,7 +649,7 @@ function App() {
             <div className="text-xs font-mono text-purple-400 break-all">
               {lastBlobHash !== "None" ? (
                 <a 
-                  href={`https://storagescan-galileo.0g.ai/tx/${lastBlobHash}`} 
+                  href={`https://chainscan-galileo.0g.ai/block/${lastBlobHash}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-purple-300 hover:underline transition-colors"
@@ -657,7 +657,7 @@ function App() {
                   {lastBlobHash}
                 </a>
               ) : (
-                "None"
+                <span className="text-slate-500 italic">Waiting for storage...</span>
               )}
             </div>
           </div>
