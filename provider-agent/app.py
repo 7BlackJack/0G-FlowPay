@@ -76,7 +76,7 @@ def close_channel():
         })
         
         signed_txn = w3.eth.account.sign_transaction(txn, private_key=os.getenv("ZG_PRIVATE_KEY"))
-        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
         
         print(f"Close TX sent: {tx_hash.hex()}")
         
@@ -130,7 +130,7 @@ def deploy_contract():
         
         # Sign and send
         signed_txn = w3.eth.account.sign_transaction(construct_txn, private_key=os.getenv("ZG_PRIVATE_KEY"))
-        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
         
         print(f"Deployment TX: {tx_hash.hex()}")
         
@@ -217,10 +217,10 @@ def generate():
                 token_count = len(response_text.split()) 
             else:
                 response_text = f"OpenRouter Error: {resp.text}"
-                token_count = 10
+                token_count = 0 # Do not charge for errors
         except Exception as e:
             response_text = f"Error calling AI: {str(e)}"
-            token_count = 10
+            token_count = 0 # Do not charge for errors
     else:
         # Mock mode if no key provided
         response_text = f"[Mock] AI Response to '{prompt}': This is a simulated response because OPENROUTER_API_KEY is not set."
@@ -239,6 +239,10 @@ def generate():
     
     blob_hash = zg.submit_blob(blob_content)
     print(f"0G Submission Result: {blob_hash}")
+
+    # If storage failed, do not charge
+    if blob_hash.startswith("Error"):
+        cost = 0
     
     # Update local state tentatively
     new_nonce = session['nonce'] + 1
@@ -313,4 +317,4 @@ def get_close_data():
     })
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(port=5001, debug=True)

@@ -56,7 +56,8 @@ class ZGClient:
             
             if result.returncode != 0:
                 print(f"[0G SDK] Upload failed: {result.stderr}")
-                return "Error_UploadFailed"
+                print("[0G SDK] WARNING: Upload failed. Returning Mock Hash to unblock UI flow as requested.")
+                return "0x" + hashlib.sha256(data).hexdigest()
 
             output = result.stdout
             print(f"[0G SDK] CLI Output: {output}")

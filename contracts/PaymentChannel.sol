@@ -64,13 +64,10 @@ contract PaymentChannel {
         payable(receiver).transfer(amount);
         
         // Refund remainder to sender
-        selfdestruct(payable(sender));
-        
-        // Note: selfdestruct is deprecated in newer EVM versions (Cancun), 
-        // but for this demo/testnet it works or we can just transfer remainder.
-        // If selfdestruct is an issue, we can do:
-        // uint256 remainder = address(this).balance;
-        // if (remainder > 0) payable(sender).transfer(remainder);
+        uint256 remainder = address(this).balance;
+        if (remainder > 0) {
+            payable(sender).transfer(remainder);
+        }
     }
 
     // If Agent B disappears, Agent A can claim funds after timeout

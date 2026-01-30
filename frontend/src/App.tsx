@@ -15,7 +15,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 // Config
-const PROVIDER_URL = "http://127.0.0.1:5000";
+const PROVIDER_URL = "http://127.0.0.1:5001";
 // const CONTRACT_ADDRESS = "0x1234567890123456789012345678901234567890"; // Mock
 
 interface Log {
@@ -312,13 +312,26 @@ function App() {
               wallet
           );
           
-          const receiverAddress = providerAddress || "0x51728259ac756361b15124513bcdb82fa5a61d8b"; 
+          // Fetch correct receiver address from backend config
+          let receiverAddress = providerAddress;
+          try {
+              const configResp = await axios.get(`${PROVIDER_URL}/config`);
+              if (configResp.data.receiver_address) {
+                  receiverAddress = configResp.data.receiver_address;
+                  setProviderAddress(receiverAddress);
+                  addLog('info', `Fetched Provider Address: ${receiverAddress}`);
+              }
+          } catch (e) {
+              console.warn("Failed to fetch provider config, using fallback", e);
+              receiverAddress = "0x5A0Ccd7458c2EAb15AaA6B04D46f221177F244E7"; // Fallback to current env key address
+          }
+          
           const duration = 86400; 
 
           // Fix for -32603: 0G Galileo Testnet often requires Legacy Transactions (Type 0)
           // We explicitly fetch gasPrice to force a non-EIP-1559 transaction.
           let deployOptions: any = {
-              value: 0,
+              value: ethers.parseEther("0.001"), // Deposit 0.001 A0GI as collateral
               gasLimit: 6000000, // Slightly higher gas limit
           };
 
@@ -394,7 +407,12 @@ function App() {
       addLog('info', `Received content (${cost} tokens). 0G Hash: ${blob_hash.substring(0, 10)}...`);
       
       // 2. Sign Payment
-      addLog('warning', `Signing payment for Balance: ${new_balance}, Nonce: ${new_nonce}...`);
+      if (cost > 0) {
+        addLog('warning', `Signing payment for Balance: ${new_balance}, Nonce: ${new_nonce}...`);
+      } else {
+        addLog('warning', `Signing state update (No Charge) for Nonce: ${new_nonce}...`);
+      }
+
       const signature = await signPayment(
         wallet, 
         contractAddress, 
@@ -418,15 +436,17 @@ function App() {
       // Calculate diff for animation
       const newBalanceBigInt = BigInt(new_balance);
       const diff = newBalanceBigInt - balance;
-      setLastPaymentAmount(ethers.formatUnits(diff, 0)); // Display as Wei string
-      setShowPaymentAnim(true);
-      setTimeout(() => setShowPaymentAnim(false), 2000);
+      if (diff > 0n) {
+          setLastPaymentAmount(ethers.formatUnits(diff, 0)); // Display as Wei string
+          setShowPaymentAnim(true);
+          setTimeout(() => setShowPaymentAnim(false), 2000);
+      }
 
       setBalance(newBalanceBigInt);
       setNonce(new_nonce);
       setLastBlobHash(blob_hash);
       
-      addLog('success', `Payment verified! Nonce ${new_nonce} confirmed.`);
+      addLog('success', cost > 0 ? `Payment verified! Nonce ${new_nonce} confirmed.` : `State verified! Nonce ${new_nonce} confirmed.`);
       
     } catch (err: any) {
       addLog('error', `Transaction failed: ${err.message}`);
