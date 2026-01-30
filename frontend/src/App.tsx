@@ -64,12 +64,20 @@ function App() {
   const [logPanelWidth, setLogPanelWidth] = useState(320);
   const [isResizingLogs, setIsResizingLogs] = useState(false);
   const [storedContract, setStoredContract] = useState<string | null>("0xFbFb1596f935D868AC2A5C273aCC59479Bc381a4");
+  const [providerAddress, setProviderAddress] = useState<string>("");
 
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // No auto-creation on load anymore
-    // User must click "Connect Wallet"
+    // Fetch provider address
+    axios.get(`${PROVIDER_URL}/config`)
+        .then(res => {
+            if (res.data.receiver_address) {
+                setProviderAddress(res.data.receiver_address);
+                console.log("Provider Address:", res.data.receiver_address);
+            }
+        })
+        .catch(err => console.error("Failed to fetch provider config", err));
   }, []);
 
   // Handle Resizing
@@ -304,7 +312,7 @@ function App() {
               wallet
           );
           
-          const receiverAddress = "0x51728259ac756361b15124513bcdb82fa5a61d8b"; 
+          const receiverAddress = providerAddress || "0x51728259ac756361b15124513bcdb82fa5a61d8b"; 
           const duration = 86400; 
 
           // Fix for -32603: 0G Galileo Testnet often requires Legacy Transactions (Type 0)
@@ -427,6 +435,36 @@ function App() {
     }
   };
 
+  const handleCloseChannel = async () => {
+      if (!sessionId) return;
+      if (!confirm("Are you sure you want to close the channel? This will settle funds on-chain.")) return;
+      
+      setIsProcessing(true);
+      addLog('info', 'Requesting channel closure & settlement...');
+      
+      try {
+          const resp = await axios.post(`${PROVIDER_URL}/close_channel`, {
+              session_id: sessionId
+          });
+          
+          addLog('success', `Channel Closed! Tx: ${resp.data.tx_hash}`);
+          addLog('success', `Final Balance Settled: ${resp.data.final_balance}`);
+          
+          // Cleanup
+          setStoredContract(null);
+          if (address) {
+              localStorage.removeItem(`flowpay_contract_${address}`);
+          }
+          setIsConnected(false);
+          setSessionId("");
+          
+      } catch (e: any) {
+          addLog('error', `Closure failed: ${e.response?.data?.error || e.message}`);
+      } finally {
+          setIsProcessing(false);
+      }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col md:flex-row overflow-hidden">
       
@@ -538,8 +576,17 @@ function App() {
                 )}
             </div>
           ) : (
-            <div className="text-xs text-slate-500 break-all font-mono mt-2">
-              Session: {sessionId.split('-')[0]}...
+            <div className="flex flex-col gap-2 mt-2">
+                <div className="text-xs text-slate-500 break-all font-mono">
+                  Session: {sessionId.split('-')[0]}...
+                </div>
+                <button 
+                  onClick={handleCloseChannel}
+                  disabled={isProcessing}
+                  className="w-full bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 text-xs py-2 rounded transition-colors flex items-center justify-center gap-2"
+                >
+                  {isProcessing ? "Closing..." : "Close Channel & Settle"}
+                </button>
             </div>
           )}
         </div>

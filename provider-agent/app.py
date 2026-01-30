@@ -27,6 +27,72 @@ sessions = {}
 w3 = Web3(Web3.HTTPProvider(os.getenv("ZG_RPC_URL")))
 account = w3.eth.account.from_key(os.getenv("ZG_PRIVATE_KEY"))
 
+@app.route('/config', methods=['GET'])
+def get_config():
+    return jsonify({
+        "receiver_address": account.address
+    })
+
+@app.route('/close_channel', methods=['POST', 'OPTIONS'])
+def close_channel():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
+    data = request.json
+    session_id = data.get('session_id')
+    
+    if session_id not in sessions:
+        return jsonify({"error": "Session not found"}), 404
+        
+    session = sessions[session_id]
+    contract_address = session['contract_address']
+    
+    # Check if we have a signature to close with
+    if not session.get('last_signature'):
+        return jsonify({"error": "No payments to settle"}), 400
+        
+    try:
+        # Load ABI
+        artifact_path = os.path.join(os.path.dirname(__file__), '../frontend/src/contracts/PaymentChannel.json')
+        with open(artifact_path, 'r') as f:
+            artifact = json.load(f)
+        
+        abi = artifact['abi']
+        contract = w3.eth.contract(address=contract_address, abi=abi)
+        
+        # Build transaction
+        amount = int(session['balance'])
+        nonce = int(session['nonce'])
+        blob_hash = session['last_blob_hash']
+        signature = session['last_signature']
+        
+        print(f"Closing channel {contract_address} with Amount: {amount}, Nonce: {nonce}")
+        
+        txn = contract.functions.close(amount, nonce, blob_hash, signature).build_transaction({
+            'from': account.address,
+            'nonce': w3.eth.get_transaction_count(account.address),
+            'gas': 300000,
+            'gasPrice': w3.eth.gas_price
+        })
+        
+        signed_txn = w3.eth.account.sign_transaction(txn, private_key=os.getenv("ZG_PRIVATE_KEY"))
+        tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        
+        print(f"Close TX sent: {tx_hash.hex()}")
+        
+        # Wait for receipt
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        return jsonify({
+            "status": "closed",
+            "tx_hash": tx_hash.hex(),
+            "final_balance": amount
+        })
+        
+    except Exception as e:
+        print(f"Close failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/deploy', methods=['POST', 'OPTIONS'])
 def deploy_contract():
     if request.method == 'OPTIONS':
