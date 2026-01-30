@@ -8,3 +8,4 @@ dist/
 build/
 *.log
 0g-storage-client-1.2.2/
+.trae/
