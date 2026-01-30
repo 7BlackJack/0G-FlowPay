@@ -1,0 +1,6 @@
+flask
+web3
+requests
+eth-account
+python-dotenv
+flask-cors

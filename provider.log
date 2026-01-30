@@ -1,0 +1,55 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 105-726-076
+127.0.0.1 - - [30/Jan/2026 12:04:40] "OPTIONS /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:04:40] "POST /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:06:49] "OPTIONS /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:08:06] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:14:43] "OPTIONS /deploy HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:14:44] "[35m[1mPOST /deploy HTTP/1.1[0m" 500 -
+127.0.0.1 - - [30/Jan/2026 12:14:55] "OPTIONS /deploy HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:14:56] "[35m[1mPOST /deploy HTTP/1.1[0m" 500 -
+127.0.0.1 - - [30/Jan/2026 12:17:28] "OPTIONS /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:17:28] "POST /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:17:38] "OPTIONS /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:18:02] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:18:05] "OPTIONS /verify_payment HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:18:05] "POST /verify_payment HTTP/1.1" 200 -
+ * Detected change in '/Users/donghao168/Desktop/Temp/0G-FlowPay/0g-sdk-wrapper/zg_client.py', reloading
+Session 815e4c8c-37bf-44f0-b891-950a991d6995 started with contract 0xFbFb1596f935D868AC2A5C273aCC59479Bc381a4
+Submitting to 0G with size 4617...
+[0G SDK] Uploading blob of size 4881 bytes to 0G...
+[0G SDK] Executing: ./0g-storage-client-1.2.2/bin/0g-storage-client upload --url https://evmrpc-testnet.0g.ai --key e0c38259ac756361b15124513bcdb82fa5a61d8b49d195d6f83ce0afb793fa50 --file /var/folders/5p/6b7p88910pd7wq29hcg4q7z00000gn/T/tmp781l5b3g --indexer https://indexer-storage-testnet-turbo.0g.ai
+[0G SDK] CLI Output: 
+0G Submission Result: Error_HashNotFound
+Deploying contract for Client: 0x753b0A72bcb8a46344C94484e2B6372D77cB1cE7, Receiver: 0x753b0A72bcb8a46344C94484e2B6372D77cB1cE7
+Deployment failed: 'SignedTransaction' object has no attribute 'rawTransaction'
+Deploying contract for Client: 0x753b0A72bcb8a46344C94484e2B6372D77cB1cE7, Receiver: 0x753b0A72bcb8a46344C94484e2B6372D77cB1cE7
+Deployment failed: 'SignedTransaction' object has no attribute 'rawTransaction'
+Session 39f9734a-e087-4e0e-b28e-d13f4c6465ba started with contract 0xFbFb1596f935D868AC2A5C273aCC59479Bc381a4
+Submitting to 0G with size 88...
+[0G SDK] Uploading blob of size 593 bytes to 0G...
+[0G SDK] Executing: ./0g-storage-client-1.2.2/bin/0g-storage-client upload --url https://evmrpc-testnet.0g.ai --key e0c38259ac756361b15124513bcdb82fa5a61d8b49d195d6f83ce0afb793fa50 --file /var/folders/5p/6b7p88910pd7wq29hcg4q7z00000gn/T/tmp5ydo3l7z --indexer https://indexer-storage-testnet-turbo.0g.ai
+[0G SDK] CLI Output: 
+0G Submission Result: Error_HashNotFound
+Payment verified! New Balance: 400000000000000, Nonce: 1
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 105-726-076
+127.0.0.1 - - [30/Jan/2026 12:19:29] "OPTIONS /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:19:29] "POST /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:19:36] "OPTIONS /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:20:08] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:20:15] "OPTIONS /verify_payment HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:20:15] "POST /verify_payment HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:23:34] "OPTIONS /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:23:34] "POST /init HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:23:42] "OPTIONS /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:25:00] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:25:02] "OPTIONS /verify_payment HTTP/1.1" 200 -
+127.0.0.1 - - [30/Jan/2026 12:25:02] "POST /verify_payment HTTP/1.1" 200 -
