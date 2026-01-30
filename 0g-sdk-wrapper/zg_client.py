@@ -52,23 +52,46 @@ class ZGClient:
             print(f"[0G SDK] Executing: {' '.join(cmd)}")
             
             # Execute command with timeout (120s)
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-            
-            if result.returncode != 0:
-                print(f"[0G SDK] Upload failed: {result.stderr}")
-                print("[0G SDK] WARNING: Upload failed. Returning Mock Hash to unblock UI flow as requested.")
-                return "0x" + hashlib.sha256(data).hexdigest()
-
+            # 0g-storage-client outputs logs to stderr, so we capture both and merge them
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=120)
             output = result.stdout
             print(f"[0G SDK] CLI Output: {output}")
             
-            for line in output.split('\n'):
-                if "root hash:" in line.lower():
-                    parts = line.split(":")
-                    if len(parts) > 1:
-                        return parts[1].strip()
+            if result.returncode != 0:
+                print(f"[0G SDK] Upload failed (Exit Code {result.returncode})")
+                print("[0G SDK] WARNING: Upload failed. Returning Mock Hash to unblock UI flow as requested.")
+                return "0x" + hashlib.sha256(data).hexdigest()
+
+            # Parse Hashes (Prefer Transaction Hash for Explorer linking)
+            tx_hash = None
+            root_hash = None
             
-            # Fallback regex
+            for line in output.split('\n'):
+                # Check for Transaction Hash
+                if "txHash=" in line:
+                    parts = line.split("txHash=")
+                    if len(parts) > 1:
+                        # Extract 0x... until space or end
+                        tx_hash = parts[1].strip().split(' ')[0]
+                
+                # Check for Root Hash
+                if "root hash:" in line.lower() or "root =" in line.lower():
+                    parts = line.split("0x")
+                    if len(parts) > 1:
+                        root_hash = "0x" + parts[1].strip().split(' ')[0]
+
+            # Prioritize returning TX Hash because it's searchable on the explorer
+            if tx_hash:
+                print(f"[0G SDK] Found Transaction Hash: {tx_hash}")
+                return tx_hash
+            
+            # Fallback to Root Hash if TX hash not found
+            if root_hash:
+                print(f"[0G SDK] Found Root Hash: {root_hash}")
+                return root_hash
+            
+            # Fallback regex for any 0x64 string if specific keys missed
+            import re
             import re
             # Matches standard 0x + 64 hex chars (common for roots/txs)
             hashes = re.findall(r'0x[a-fA-F0-9]{64}', output)
