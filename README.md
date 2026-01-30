@@ -19,6 +19,8 @@
     *   Agent A verifies -> Signs new balance -> Sends signature to Agent B.
 3.  **Settlement**: Agent B submits final signature to contract to withdraw.
 
+![0g_flowpay](/Users/donghao168/Downloads/0g_flowpay.png)
+
 ## Tech Stack
 
 *   **Contracts**: Solidity

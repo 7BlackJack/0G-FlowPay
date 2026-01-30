@@ -1,7 +1,7 @@
 #!/bin/bash
 source venv/bin/activate
 
-# Kill any existing python processes (be careful, but this is a sandbox)
+# Kill any existing python processes (be careful, but twhis is a sandbox)
 pkill -f "python provider-agent/app.py"
 
 echo "Starting Provider Agent (Backend)..."
