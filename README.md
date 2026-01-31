@@ -46,7 +46,7 @@
 
 ## Deployment
 
-To deploy this project to the web (Render + Vercel), please read [DEPLOY.md](./DEPLOY.md).
+Please refer to standard Flask (Backend) and React (Frontend) deployment guides. Ensure environment variables are set correctly as per `.env.example`.
 
 ### 1. Installation
 

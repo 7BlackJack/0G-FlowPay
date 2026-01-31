@@ -10,3 +10,9 @@ build/
 0g-storage-client-1.2.2/
 .trae/
 .vercel/
+DEPLOY.md
+check_balance.py
+debug_env.py
+debug_web3.py
+test.txt
+test_upload.py
