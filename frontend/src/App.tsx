@@ -15,7 +15,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 // Config
-const PROVIDER_URL = "http://127.0.0.1:5001";
+const PROVIDER_URL = import.meta.env.VITE_PROVIDER_URL || "http://127.0.0.1:5001";
 // const CONTRACT_ADDRESS = "0x1234567890123456789012345678901234567890"; // Mock
 
 interface Log {

@@ -65,38 +65,72 @@ class ZGClient:
             # Parse Hashes (Prefer Transaction Hash for Explorer linking)
             tx_hash = None
             root_hash = None
+            block_hash = None
             
-            for line in output.split('\n'):
-                # Check for Transaction Hash
-                if "txHash=" in line:
-                    parts = line.split("txHash=")
-                    if len(parts) > 1:
-                        # Extract 0x... until space or end
-                        tx_hash = parts[1].strip().split(' ')[0]
+            import re
+            
+            lines = output.split('\n')
+            for i, line in enumerate(lines):
+                # Check for Transaction Hash (flexible matching)
+                if "txhash" in line.lower() or "transaction hash" in line.lower() or "tx hash" in line.lower():
+                    found = re.search(r'0x[a-fA-F0-9]{64}', line)
+                    if found:
+                        tx_hash = found.group(0)
+                    elif i + 1 < len(lines):
+                        # Check next line
+                        found_next = re.search(r'0x[a-fA-F0-9]{64}', lines[i+1])
+                        if found_next:
+                            tx_hash = found_next.group(0)
                 
                 # Check for Root Hash
-                if "root hash:" in line.lower() or "root =" in line.lower():
-                    parts = line.split("0x")
-                    if len(parts) > 1:
-                        root_hash = "0x" + parts[1].strip().split(' ')[0]
+                if "root hash" in line.lower() or "root =" in line.lower():
+                    found = re.search(r'0x[a-fA-F0-9]{64}', line)
+                    if found:
+                        root_hash = found.group(0)
+                    elif i + 1 < len(lines):
+                        found_next = re.search(r'0x[a-fA-F0-9]{64}', lines[i+1])
+                        if found_next:
+                            root_hash = found_next.group(0)
+
+                # Check for Block Hash (to avoid confusing it with Tx Hash)
+                if "block hash" in line.lower():
+                    found = re.search(r'0x[a-fA-F0-9]{64}', line)
+                    if found:
+                        block_hash = found.group(0)
+                    elif i + 1 < len(lines):
+                        found_next = re.search(r'0x[a-fA-F0-9]{64}', lines[i+1])
+                        if found_next:
+                            block_hash = found_next.group(0)
 
             # Prioritize returning TX Hash because it's searchable on the explorer
             if tx_hash:
                 print(f"[0G SDK] Found Transaction Hash: {tx_hash}")
                 return tx_hash
             
-            # Fallback to Root Hash if TX hash not found
+            # Fallback regex for any 0x64 string if specific keys missed
+            hashes = re.findall(r'0x[a-fA-F0-9]{64}', output)
+            
+            # If we have multiple hashes, assume the last one is the Transaction Hash
+            # But be careful if the last one is actually the Block Hash
+            if len(hashes) > 1:
+                last_hash = hashes[-1]
+                # If we identified a block hash and it matches the last one, try the previous one
+                if block_hash and last_hash == block_hash:
+                     print(f"[0G SDK] Last hash matches Block Hash ({block_hash}). Using the previous one as Tx Hash.")
+                     if len(hashes) > 1:
+                         return hashes[-2]
+                
+                print(f"[0G SDK] Multiple hashes found. Returning the last one as Tx Hash: {last_hash}")
+                return last_hash
+
+            # If only one hash found, return it (likely Root Hash if Tx failed or wasn't printed)
+            if hashes:
+                return hashes[0]
+            
+            # Fallback to Root Hash if parsed specifically but regex missed (unlikely)
             if root_hash:
                 print(f"[0G SDK] Found Root Hash: {root_hash}")
                 return root_hash
-            
-            # Fallback regex for any 0x64 string if specific keys missed
-            import re
-            import re
-            # Matches standard 0x + 64 hex chars (common for roots/txs)
-            hashes = re.findall(r'0x[a-fA-F0-9]{64}', output)
-            if hashes:
-                return hashes[0]
             
             # If still failing, return a Mock Hash to unblock the demo flow
             print("[0G SDK] WARNING: Failed to parse hash from CLI output. Returning Mock Hash to unblock UI.")

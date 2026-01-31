@@ -44,6 +44,10 @@
 - Go 1.21+ (for compiling 0g-storage-client)
 - Metamask (configured with 0G Testnet)
 
+## Deployment
+
+To deploy this project to the web (Render + Vercel), please read [DEPLOY.md](./DEPLOY.md).
+
 ### 1. Installation
 
 ```bash
